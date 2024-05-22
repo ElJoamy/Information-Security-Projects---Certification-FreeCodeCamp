@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const stockSchema = new mongoose.Schema({
   stock: String,
-  price: String,
+  price: Number,
   likes: Number,
   ips: [String]
 });
@@ -48,9 +48,27 @@ module.exports = function (app) {
           };
         }));
 
-        res.json({
-          stockData: stocks.length === 1 ? stockData[0] : stockData
-        });
+        if (stocks.length === 2) {
+          const relLikes = stockData[0].likes - stockData[1].likes;
+          res.json({
+            stockData: [
+              {
+                stock: stockData[0].stock,
+                price: stockData[0].price,
+                likes: stockData[0].likes,
+                rel_likes: relLikes
+              },
+              {
+                stock: stockData[1].stock,
+                price: stockData[1].price,
+                likes: stockData[1].likes,
+                rel_likes: -relLikes
+              }
+            ]
+          });
+        } else {
+          res.json({ stockData: stockData[0] });
+        }
       } catch (error) {
         console.error(error);
         res.status(500).send('Error retrieving stock data');
